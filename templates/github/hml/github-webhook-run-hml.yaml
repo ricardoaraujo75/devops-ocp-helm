@@ -2,12 +2,12 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  name: tr-create-{{ .Values.application.name }}-webhook-hom
+  name: tr-create-{{ .Values.application.name }}-webhook-sta
   namespace: {{ .Values.application.environments.cicd }}
 spec:
   serviceAccountName: {{ .Values.pipeline.sa.default }}
   taskRef:
-    name: {{ .Values.application.name }}-create-webhook-hom
+    name: {{ .Values.application.name }}-create-webhook-sta
   params:
   - name: GitHubUser
     value: {{ .Values.pipeline.webhook.github.user }}
@@ -18,4 +18,4 @@ spec:
   - name: GitHubDomain
     value: {{ .Values.pipeline.gitea.host }}   
   - name: ExternalDomain
-    value: http://el-{{ .Values.application.name }}-webhooks-hom-{{ .Values.application.environments.cicd }}.{{ .Values.cluster }}
+    value: http://el-{{ .Values.application.name }}-webhooks-sta-{{ .Values.application.environments.cicd }}.{{ .Values.cluster }}

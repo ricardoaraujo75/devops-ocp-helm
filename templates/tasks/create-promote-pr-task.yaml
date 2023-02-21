@@ -47,7 +47,7 @@ spec:
 
         /bin/cp -rf $(params.COPY_FROM_PATH)/* $(params.COPY_TO_PATH)
 
-        sed -i "s/homologation/production/" $(params.COPY_TO_PATH)/kustomization.yaml 
+        sed -i "s/stage/production/" $(params.COPY_TO_PATH)/kustomization.yaml 
         sed -i "s/{{ .Values.application.environments.hom }}/{{ .Values.application.environments.prod }}/" $(params.COPY_TO_PATH)/kustomization.yaml 
 
         git status
@@ -78,7 +78,7 @@ spec:
         print("Branch name: " + git_branch)
 
         pr_title = "[$(context.taskRun.name)] Promote to PROD environment"
-        pr_body = "TaskRun $(context.taskRun.name)\\nPromoting application from HOM to PROD environment"
+        pr_body = "TaskRun $(context.taskRun.name)\\nPromoting application from STAGE to PROD environment"
         data_pr = '{"base": "{{ .Values.pipeline.manifest.branch }}","body": "' + pr_body + '","head": "' + git_branch + '","title": "' + pr_title + '"}'
         headers = {'Content-Type': 'application/json'}
         resp = requests.post(url = giteaURL + "/api/v1/repos/" + gitea_user + "/{{ .Values.pipeline.webhook.github.repo }}-config/pulls", 

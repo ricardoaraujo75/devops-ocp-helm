@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: tt-{{ .Values.application.name }}-trigger-template-hom
+  name: tt-{{ .Values.application.name }}-trigger-template-sta
 spec:
   params:
   - name: ref
@@ -28,8 +28,7 @@ spec:
   - apiVersion: tekton.dev/v1beta1
     kind: PipelineRun
     metadata:
-      generateName: pr-{{ .Values.application.name }}-hom-
-      # name: {{ .Values.application.name }}-hom-$(tt.params.gitbranchname)-$(tt.params.gitshortsha)
+      generateName: pr-{{ .Values.application.name }}-sta-
       labels:
         tekton.dev/pipeline: {{ .Values.application.name }}-pipeline
     spec:

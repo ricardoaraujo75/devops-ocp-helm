@@ -5,7 +5,7 @@ application:
   environments:
     cicd: cicd
     dev: dev
-    hom: hom
+    hom: sta
     prod: prod
 pipeline:
   sa:
@@ -19,7 +19,7 @@ pipeline:
     branch: main
     path:
       dev: environments/dev
-      hom: environments/hom
+      hom: environments/sta
       prod: environments/prod
   webhook:
     github:

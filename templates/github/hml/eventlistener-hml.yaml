@@ -2,11 +2,11 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: {{ .Values.application.name }}-webhook-hom
+  name: {{ .Values.application.name }}-webhook-sta
 spec:
   serviceAccountName: pipeline
   triggers:
-    - name: {{ .Values.application.name }}-webhook-hom
+    - name: {{ .Values.application.name }}-webhook-sta
       interceptors:
         - name: "add short sha"
           ref:
@@ -19,22 +19,22 @@ spec:
             - key: branch_name
               expression: "body.ref.split('/')[2]"
       bindings:
-        - ref: tb-gogs-triggerbinding-hom
+        - ref: tb-gogs-triggerbinding-sta
       template:
-        ref: tt-{{ .Values.application.name }}-trigger-template-hom
+        ref: tt-{{ .Values.application.name }}-trigger-template-sta
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: el-{{ .Values.application.name }}-webhooks-hom
+  name: el-{{ .Values.application.name }}-webhooks-sta
   labels:
     app.kubernetes.io/managed-by: EventListener
     app.kubernetes.io/part-of: Triggers
-    eventlistener: {{ .Values.application.name }}-webhook-hom
+    eventlistener: {{ .Values.application.name }}-webhook-sta
 spec:
   port:
     targetPort: http-listener
   to:
     kind: "Service"
-    name: el-{{ .Values.application.name }}-webhook-hom
+    name: el-{{ .Values.application.name }}-webhook-sta
     weight: 100
