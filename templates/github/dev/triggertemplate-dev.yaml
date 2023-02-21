@@ -1,0 +1,56 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: tt-{{ .Values.application.name }}-trigger-template-dev
+spec:
+  params:
+  - name: ref
+    description: The git branch
+    default: developer
+  - name: gitrevision
+    description: The git revision
+    default: master
+  - name: gitshortsha
+    description: The short commit sha
+    default: master
+  - name: gitbranchname
+    description: The branch name
+    default: master
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: message
+    description: The message to print
+    default: This is the default message
+  - name: contenttype
+    description: The Content-Type of the event
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: pr-{{ .Values.application.name }}-dev-
+      # name: {{ .Values.application.name }}-dev-$(tt.params.gitbranchname)-$(tt.params.gitshortsha)
+      labels:
+        tekton.dev/pipeline: {{ .Values.application.name }}-pipeline
+    spec:
+      pipelineRef:
+        name: {{ .Values.application.name }}-pipeline
+      params:
+        - name: APP_SOURCE_BRANCH
+          value: $(tt.params.ref)
+        - name: APP_SOURCE_REVISION
+          value: $(tt.params.gitrevision)
+        - name: APP_IMAGE_URL
+          value: image-registry.openshift-image-registry.svc:5000/{{ .Values.application.environments.dev }}/{{ .Values.application.name }}  
+        - name: APP_IMAGE_TAG
+          value: $(tt.params.gitbranchname)-$(tt.params.gitshortsha)
+        - name: APP_MANIFESTS_PATH
+          value: environments/dev
+
+      workspaces:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: pipeline-build-workspace      
+      - name: maven-settings
+        configMap:
+          name: maven-settings

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maven-settings
+data:
+  settings.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <settings>
+      <servers>
+        <server>
+          <id>nexus</id>
+          <username>admin</username>
+          <password>admin123</password>
+        </server>
+        <server>
+            <id>nexus-snapshot</id>
+            <username>admin</username>
+            <password>admin123</password>
+        </server>
+        <server>
+            <id>nexus-releases</id>
+            <username>admin</username>
+            <password>admin123</password>
+        </server>        
+      </servers>
+      <mirrors>
+        <mirror>
+          <id>nexus</id>
+          <name>nexus</name>
+          <url>http://sonatype-nexus-service:8081/repository/maven-public/</url>
+          <mirrorOf>*</mirrorOf>
+        </mirror>
+      </mirrors>
+      <profiles>
+          <profile>
+            <id>nexus</id>
+            <repositories>
+                <repository>
+                  <id>public</id>
+                  <url>http://sonatype-nexus-service:8081/repository/maven-all-public/</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+            <pluginRepository>
+                <id>public</id>
+                <url>http://sonatype-nexus-service:8081/repository/maven-all-public/</url>
+            </pluginRepository>
+            </pluginRepositories>
+          </profile>    
+      </profiles>
+    </settings>

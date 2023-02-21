@@ -1,0 +1,211 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: {{ .Values.application.name }}-pipeline
+spec:
+  params:
+    - name: APP_SOURCE_GIT
+      type: string
+      description: The application git repository
+      default: https://{{ .Values.pipeline.gitea.host }}/gitea/{{ .Values.pipeline.webhook.github.repo }}
+    - name: APP_SOURCE_REVISION
+      type: string
+      description: The application git revision
+      default: {{ .Values.pipeline.manifest.branch }}
+    - name: APP_SOURCE_BRANCH
+      type: string
+      default: refs/heads/development
+    - name: APP_MANIFESTS_GIT
+      type: string
+      description: The application manifests git repository
+      default: https://{{ .Values.pipeline.gitea.host }}/gitea/{{ .Values.pipeline.webhook.github.repo }}-config
+    - name: APP_MANIFESTS_PATH
+      type: string
+      description: The application manifests git repository path
+      default: {{ .Values.pipeline.manifest.path.dev }}     
+    - name: APP_IMAGE_URL
+      type: string
+      default: latest
+      description: The url application image to build
+    - name: APP_IMAGE_TAG
+      type: string
+      default: latest
+      description: The application image tag to build
+  workspaces:
+  - name: workspace
+  - name: maven-settings
+  results:
+    - name: APP_IMAGE_DIGETST
+      description: The image digest built in the pipeline
+      value: $(tasks.build-image.results.IMAGE_DIGEST)
+    - name: APP_IMAGE_URL
+      description: The image url built in the pipeline
+      value: $(tasks.build-image.results.IMAGE_NAME)
+  tasks:
+  - name: source-clone
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+    - name: output
+      workspace: workspace
+    params:
+    - name: url
+      value: $(params.APP_SOURCE_GIT)
+    - name: revision
+      value: $(params.APP_SOURCE_REVISION)
+    - name: depth
+      value: "0"
+    - name: subdirectory
+      value: {{ .Values.application.name }}
+    - name: deleteExisting
+      value: "true"  
+
+  - name: build-app
+    taskRef:
+      name: maven
+      kind: ClusterTask
+    runAfter:
+      - source-clone
+    workspaces:
+    - name: source
+      workspace: workspace
+    - name: maven-settings
+      workspace: maven-settings
+    params:
+    - name: GOALS
+      value:
+      - package
+      - -f
+      - {{ .Values.application.name }}
+      - -Popenshift
+
+  - name: code-analysis
+    taskRef:
+      name: maven
+      kind: ClusterTask
+    runAfter:
+      - build-app
+    workspaces:
+    - name: source
+      workspace: workspace
+    - name: maven-settings
+      workspace: maven-settings
+    params:
+    - name: GOALS
+      value:
+      - install
+      - sonar:sonar
+      - -f
+      - {{ .Values.application.name }}
+      - -Dsonar.host.url=http://sonar-sonarqube:9000
+      - -Dsonar.userHome=/tmp/sonar
+      - -DskipTests=true
+  
+  - name: security-scan
+    taskRef:
+      name: maven
+      kind: ClusterTask
+    runAfter:
+      - build-app
+    workspaces:
+    - name: source
+      workspace: workspace
+    - name: maven-settings
+      workspace: maven-settings
+    params:
+    - name: GOALS
+      value: ["--version", "-f", "{{ .Values.application.name }}"]
+  
+  - name: archive-app
+    taskRef:
+      name: maven
+      kind: ClusterTask
+    runAfter:
+      - code-analysis
+      - security-scan
+    workspaces:
+    - name: source
+      workspace: workspace
+    - name: maven-settings
+      workspace: maven-settings
+    params:
+    - name: GOALS
+      value:
+      - deploy
+      - -f 
+      - {{ .Values.application.name }}
+      - -DskipTests=true
+
+  - name: build-image
+    taskRef:
+      name: s2i-eap74
+    runAfter:
+    - archive-app
+    params:
+      - name: TLSVERIFY
+        value: "false"
+      - name: MAVEN_MIRROR_URL
+        value: http://sonatype-nexus-service:8081/repository/maven-public/
+      - name: MAVEN_ARGS_APPEND
+        value: ' -s settings.xml -Popenshift'
+      - name: PATH_CONTEXT
+        value: deployments
+      - name: IMAGE_NAME
+        value: $(params.APP_IMAGE_URL)
+      - name: IMAGE_TAG
+        value: $(params.APP_IMAGE_TAG)
+    workspaces:
+    - name: source
+      workspace: workspace
+ 
+  - name: update-deployment
+    runAfter:
+    - build-image
+    taskRef:
+      name: git-update-deployment
+    params:
+      - name: GIT_REPOSITORY
+        value: $(params.APP_MANIFESTS_GIT)
+      - name: GIT_USERNAME
+        value: {{ .Values.pipeline.webhook.github.user }}
+      - name: GIT_PASSWORD
+        value: {{ .Values.pipeline.webhook.github.pass }}
+      - name: CURRENT_IMAGE
+        value: $(params.APP_IMAGE_URL):latest
+      - name: NEW_IMAGE
+        value: $(params.APP_IMAGE_URL)
+      - name: NEW_DIGEST
+        value: "$(tasks.build-image.results.IMAGE_DIGEST)"
+      - name: KUSTOMIZATION_PATH
+        value: $(params.APP_MANIFESTS_PATH)
+    workspaces:
+    - name: workspace
+      workspace: workspace      
+
+  - name: promote-prod-pr
+    conditions:
+    - conditionRef: is-allowed-production
+      params:
+        - name: revision-type
+          value: $(params.APP_SOURCE_BRANCH)
+    runAfter:
+    - update-deployment
+    taskRef:
+      name: create-promote-pull-request
+    params:
+      - name: GIT_REPOSITORY
+        value: "$(params.APP_MANIFESTS_GIT)"
+      - name: GIT_USERNAME
+        value: {{ .Values.pipeline.webhook.github.user }}
+      - name: GIT_PASSWORD
+        value: {{ .Values.pipeline.webhook.github.pass }}
+      - name: GIT_HOST
+        value: {{ .Values.pipeline.gitea.host }}
+      - name: COPY_FROM_PATH
+        value: {{ .Values.pipeline.manifest.path.hom }}
+      - name: COPY_TO_PATH
+        value: {{ .Values.pipeline.manifest.path.prod }}
+    workspaces:
+    - name: workspace
+      workspace: workspace

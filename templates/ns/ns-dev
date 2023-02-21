@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/sa.scc.mcs: s0:c26,c0
+    openshift.io/sa.scc.supplemental-groups: 1000650000/10000
+    openshift.io/sa.scc.uid-range: 1000650000/10000
+  labels:
+    argocd.argoproj.io/managed-by: {{ .Values.application.environments.cicd }}
+    kubernetes.io/metadata.name: {{ .Values.application.environments.dev }}
+    name: {{ .Values.application.environments.dev }}
+  name: {{ .Values.application.environments.dev }}
+spec:
+  finalizers:
+  - kubernetes

@@ -1,0 +1,29 @@
+cluster: apps.cluster-cwmf5.cwmf5.sandbox1172.opentlc.com
+application:
+  name: app-eap
+  runtime:  jboss-eap74-openjdk11-openshift:7.4.0
+  environments:
+    cicd: cicd
+    dev: dev
+    hom: hom
+    prod: prod
+pipeline:
+  sa:
+    default: pipeline
+  gitea:
+    host: gitea-cicd.{{ .Values.cluster }}
+  build:
+    s2i:
+      context: weather
+  manifest:
+    branch: main
+    path:
+      dev: environments/dev
+      hom: environments/hom
+      prod: environments/prod
+  webhook:
+    github:
+      org: gitea
+      user: gitea
+      repo: devops-ocp-app
+      pass: devops

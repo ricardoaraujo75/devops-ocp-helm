@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.application.name }}-dev
+spec:
+  destination:
+    namespace: {{ .Values.application.environments.dev }}
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: environments/dev
+    repoURL: https://{{ .Values.pipeline.gitea.host }}/gitea/{{ .Values.pipeline.webhook.github.repo }}-config
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

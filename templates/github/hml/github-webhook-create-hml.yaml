@@ -1,0 +1,34 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: {{ .Values.application.name }}-create-webhook-hom
+  namespace: {{ .Values.application.environments.cicd }}
+spec:
+  params:
+  - name: ExternalDomain
+    description: "The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`"
+  - name: GitHubUser
+    description: "The GitHub user"
+  - name: GitHubRepo
+    description: "The GitHub repo where the webhook will be created"
+  - name: GitHubPass
+    description: "The GitHub password"
+  - name: GitHubDomain
+    description: "The GitHub domain. Override for GitHub Enterprise"
+    default: {{ .Values.pipeline.gitea.host }}
+  - name: WebhookEvents
+    description: "List of events the webhook will send notifications for"
+    default: '[\"push\",\"pull_request\"]'
+  steps:
+  - name: create-webhook
+    image: registry.redhat.io/openshift4/ose-cli
+    command:
+    - sh
+    args:
+    - -ce
+    - |
+      set -e
+      echo "Create Webhook"
+
+      curl --location --request POST -u $(inputs.params.GitHubUser):$(inputs.params.GitHubPass) "https://$(inputs.params.GitHubDomain)/api/v1/repos/gitea/{{ .Values.pipeline.webhook.github.repo }}/hooks" --header "Content-Type: application/json" --data-raw "{\"active\": true,\"branch_filter\": \"{release, hotfix}\",\"config\": {\"content_type\": \"json\",\"url\": \"$(inputs.params.ExternalDomain)\",\"http_method\": \"post\"},\"events\": [\"push\"],\"type\": \"gitea\"}"

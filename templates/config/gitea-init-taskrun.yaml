@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: init-gitea
+spec:
+  taskSpec:
+    params:
+    - name: GIT_HOST
+      type: string
+      default: {{ .Values.pipeline.gitea.host }}
+    - name: GITEA_USER
+      type: string
+      description: Gitea admin username
+      default: {{ .Values.pipeline.webhook.github.user }}
+    - name: GITEA_PASSWORD
+      type: string
+      description: Gitea admin password
+      default: {{ .Values.pipeline.webhook.github.pass }}
+    stepTemplate:
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    steps:
+      - name: init-gitea
+        image: quay.io/siamaksade/python-oc
+        script: |
+          #!/usr/bin/env python3
+
+          import os
+          import requests 
+
+          gitea_user = "$(params.GITEA_USER)"
+          gitea_pwd = "$(params.GITEA_PASSWORD)"
+          giteaURL = "https://$(params.GIT_HOST)"
+
+          # create admin user
+          data_user = {
+          'user_name': gitea_user,
+          'password': gitea_pwd,
+          'retype': gitea_pwd,
+          'email': 'admin@gitea.com'
+          }
+
+          print("###  Cria o usuário no gitea  ###")
+          print(giteaURL)
+          resp = requests.post(url = giteaURL + "/user/sign_up", data = data_user) 
+
+          if resp.status_code != 200:
+            print("Error creating Gogs admin (status code: {})".format(resp.status_code))
+            print(resp.content)
+          else:
+            print("Created admin user {}:{}".format(gitea_user, gitea_pwd))
+        
+          print("###  Importa o repositorio da app para o gitea  ###")
+          # create git repo devops-ocp-app
+          data_repo = '{"clone_addr": "https://github.com/ricardoaraujo75/devops-ocp-app.git", "uid": 1, "repo_name": "{{ .Values.pipeline.webhook.github.repo }}"}'
+          headers = {'Content-Type': 'application/json'}
+          resp = requests.post(url = giteaURL + "/api/v1/repos/migrate", headers = headers, auth = (gitea_user, gitea_pwd), data = data_repo)  
+
+          if resp.status_code != 200 and resp.status_code != 201:
+            print("Error creating git repo (status code: {})".format(resp.status_code))
+            print(resp.content)
+          else:
+            print("Created git repo devops-ocp-app")
+
+          print("###  Importa o repositório de configuração da app para o gitea  ###")
+          # create git repo devops-ocp-app-config
+          data_repo = '{"clone_addr": "https://github.com/ricardoaraujo75/devops-ocp-app-config.git", "uid": 1, "repo_name": "{{ .Values.pipeline.webhook.github.repo }}-config"}'
+          headers = {'Content-Type': 'application/json'}
+          resp = requests.post(url = giteaURL + "/api/v1/repos/migrate", headers = headers, auth = (gitea_user, gitea_pwd), data = data_repo)  
+
+          if resp.status_code != 200 and resp.status_code != 201:
+            print("Error creating git repo (status code: {})".format(resp.status_code))
+            print(resp.content)
+          else:
+            print("Created git repo devops-ocp-app-config")
