@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: tb-gogs-triggerbinding-hom
+  name: tb-gogs-triggerbinding-sta
 spec:
   params:
   - name: ref
