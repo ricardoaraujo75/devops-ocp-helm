@@ -47,7 +47,7 @@ spec:
 
         /bin/cp -rf $(params.COPY_FROM_PATH)/* $(params.COPY_TO_PATH)
 
-        sed -i "s/stage/production/" $(params.COPY_TO_PATH)/kustomization.yaml 
+        sed -i "s/staging/production/" $(params.COPY_TO_PATH)/kustomization.yaml 
         sed -i "s/{{ .Values.application.environments.hom }}/{{ .Values.application.environments.prod }}/" $(params.COPY_TO_PATH)/kustomization.yaml 
 
         git status
