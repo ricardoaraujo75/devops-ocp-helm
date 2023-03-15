@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/version: '0.1'
     operator.tekton.dev/provider-type: community
 spec:
-  description: This Task can be used to update image digest in a Git repo using kustomize
+  description: This Task can be used to update image digest in a Git repo using the kustomize
   params:
     - name: GIT_REPOSITORY
       type: string
