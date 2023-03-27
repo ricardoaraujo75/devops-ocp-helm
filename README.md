@@ -99,7 +99,7 @@ oc apply -f devops-ocp-helm/templates/operator-pipeline/openshift-pipelines-sub.
 
 ```
 
-Wait finish in Operators / Installed Operators and confirm that OpenShift Pipeline Operator has been successfully installed.
+Wait to finish in Operators / Installed Operators and confirm that OpenShift Pipeline Operator has been successfully installed.
 | ![OpenShift Pipeline](assets/openshift-pipeline.png) |
 |-| 
 
