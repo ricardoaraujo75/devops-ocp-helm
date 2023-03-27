@@ -52,8 +52,8 @@ Make sure if SonarQube is running through the Ready column where the value must 
 |-| 
 
 Change Sonarqube password from admin/admin to admin/admin123.
-| ![Sonarqube Password](assets/sonar-pass.png) |
-|-| 
+
+<img src="assets/sonar-pass.png" alt=“Password” width="50%" height="50%"> 
 
 
 Adjust Sonar for access without authentication.
