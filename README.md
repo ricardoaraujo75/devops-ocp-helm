@@ -48,11 +48,11 @@ helm upgrade --install sonar redhat-cop/sonarqube -n cicd
 ```
 
 Make sure if SonarQube is running through the Ready column where the value must be 1/1.
-| ![Sonarqube Running](assets/sonarqube-running.png) |
+| ![Sonarqube Running](assets/sonar-running.png) |
 |-| 
 
 Change Sonarqube password from admin/admin to admin/admin123.
-| ![Sonarqube Password](assets/sonarqube-pass.png) |
+| ![Sonarqube Password](assets/sonar-pass.png) |
 |-| 
 
 
