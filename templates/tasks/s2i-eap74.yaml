@@ -155,6 +155,10 @@ spec:
       image: registry.redhat.io/rhel8/buildah@sha256:180c4d9849b6ab0e5465d30d4f3a77765cf0d852ca1cb1efb59d6e8c9f90d467
       name: push-latest
       resources: {}
+      securityContext:
+        capabilities:
+          add:
+            - SETFCAP
       volumeMounts:
         - mountPath: /var/lib/containers
           name: varlibcontainers
