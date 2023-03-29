@@ -93,7 +93,6 @@ Run the next commands to install the OpenShift Pipeline - Tekton.
 
 ```bash
 oc project cicd
-oc project cicd
 git clone https://github.com/ricardoaraujo75/devops-ocp-helm.git
 oc apply -f devops-ocp-helm/templates/operator-pipeline/openshift-pipelines-sub.yaml
 
