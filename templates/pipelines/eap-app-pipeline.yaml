@@ -184,11 +184,10 @@ spec:
       workspace: workspace      
 
   - name: promote-prod-pr
-    conditions:
-    - conditionRef: is-allowed-production
-      params:
-        - name: revision-type
-          value: $(params.APP_SOURCE_BRANCH)
+    when:
+    - input: "$(params.APP_SOURCE_BRANCH)"
+      operator: in
+      values: ["refs/heads/release"]
     runAfter:
     - update-deployment
     taskRef:

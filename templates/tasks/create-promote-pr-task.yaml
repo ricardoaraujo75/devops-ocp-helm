@@ -87,7 +87,7 @@ spec:
                             data = data_pr) 
                              
 
-        if resp.status_code != 200:
+        if resp.status_code != 201:
           print("Error creating pull-request (status code: {})".format(resp.status_code))
           print(resp.content)
         else:
