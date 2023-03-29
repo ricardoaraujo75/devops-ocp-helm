@@ -68,6 +68,10 @@ spec:
         registry.redhat.io/ocp-tools-43-tech-preview/source-to-image-rhel8@sha256:562dbdac04ae9260e21d457585b3251fd8cc5310966f8fc544fb77dc544c92f8
       name: gen-env-file
       resources: {}
+      securityContext:
+        capabilities:
+          add:
+            - SETFCAP      
       volumeMounts:
         - mountPath: /env-params
           name: envparams
