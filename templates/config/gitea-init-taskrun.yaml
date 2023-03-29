@@ -30,11 +30,14 @@ spec:
 
           import os
           import requests 
+          import time
 
           gitea_user = "$(params.GITEA_USER)"
           gitea_pwd = "$(params.GITEA_PASSWORD)"
           giteaURL = "https://$(params.GIT_HOST)"
 
+          time.sleep(5)
+          
           # create admin user
           data_user = {
           'user_name': gitea_user,
