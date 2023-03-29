@@ -156,7 +156,7 @@ For development, the Pull Request promotion task is not performed.
 The next command clones the app repository from gitea server and creates a new branch called develop, then push to origin develop, so the webhook configured starts the pipeline for develop environment.  
 
 ```bash
-git clone https://gitea-cicd.apps.$cluster/gitea/devops-ocp-app.git 
+git clone https://gitea-cicd.$cluster/gitea/devops-ocp-app.git 
 cd devops-ocp-app
 git checkout -b develop
 # User and password gitea/devops
