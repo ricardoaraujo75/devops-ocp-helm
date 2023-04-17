@@ -30,5 +30,5 @@ spec:
     - |
       set -e
       echo "Create Webhook"
-      sleep 10
+      sleep 25
       curl --location --request POST -u $(inputs.params.GitHubUser):$(inputs.params.GitHubPass) "https://$(inputs.params.GitHubDomain)/api/v1/repos/gitea/{{ .Values.pipeline.webhook.github.repo }}/hooks" --header "Content-Type: application/json" --data-raw "{\"active\": true,\"branch_filter\": \"{release, hotfix}\",\"config\": {\"content_type\": \"json\",\"url\": \"$(inputs.params.ExternalDomain)\",\"http_method\": \"post\"},\"events\": [\"push\"],\"type\": \"gitea\"}"
